@@ -45,6 +45,17 @@ class Context(SimpleNamespace):
     def __contains__(self, item):
         return item in self.__dict__
 
+    def ensure_get(self, key: str, create_fn):
+        obj = None
+        if key is None:
+            obj = create_fn()
+        elif key not in self:
+            obj = create_fn()
+            self[key] = obj
+        else:
+            obj = self[key]
+        return obj
+
 
 @dataclass
 class TimeInfo:
@@ -90,7 +101,7 @@ def _default_setup(ctx: Context, **kwargs):
 
 def find_node(root: scene.Node, name: str):
     """Find node by key in scene graph."""
-    if str is None:
+    if name is None:
         return root
 
     stack = deque()
@@ -101,7 +112,7 @@ def find_node(root: scene.Node, name: str):
         for child in enumerate(n.children):
             stack.append(child)
 
-    return root
+    return None
 
 
 def _worker(inq: Queue, **worker_kwargs):

@@ -14,20 +14,19 @@ def scatter(
     """Plot or update a set n-dimensional points"""
 
     key = key or "_default"
+    marker_kwargs = marker_kwargs or {}
 
     def _scatter(ctx: core.Context):
         # called in remote context
         from vispy.scene.visuals import Markers
 
-        if key not in ctx:
-            markers = Markers(
+        markers = ctx.ensure_get(
+            key,
+            lambda: Markers(
                 parent=core.find_node(ctx.view.scene, parent_key),
                 name=key,
-            )
-            if key is not None:
-                ctx[key] = markers
-        else:
-            markers = ctx[key]
+            ),
+        )
 
         markers.set_data(
             pos=xyz,
