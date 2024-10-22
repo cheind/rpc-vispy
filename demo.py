@@ -8,6 +8,11 @@ from vispy import app
 def basic():
 
     # Scatter random points
+    rv.primitives.xyz_axis(scale=0.25, key="world")
+
+    # Scale to 1.0 after 1.0 sec
+    rv.primitives.xyz_axis(scale=1.0, key="world", ti=rv.dt(1.0))
+
     xyz = np.random.randn(10, 3)
     rv.primitives.scatter(
         xyz,

@@ -106,7 +106,7 @@ def find_node(root: scene.Node, name: str):
 
     stack = deque()
     while len(stack) > 0:
-        n = stack.popleft()
+        n = stack.pop()
         if n.name is not None and n.name == name:
             return n
         for child in enumerate(n.children):
