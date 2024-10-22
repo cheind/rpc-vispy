@@ -9,6 +9,7 @@ def scatter(
     parent_key: str = None,
     ti: core.TimeInfo = None,
     v: core.RPCCanvas = None,
+    marker_kwargs: dict = None,
 ):
     """Plot or update a set n-dimensional points"""
 
@@ -32,6 +33,7 @@ def scatter(
             pos=xyz,
             edge_color=color,
             face_color=color,
+            **marker_kwargs,
         )
 
     v = v or core.current_canvas()
