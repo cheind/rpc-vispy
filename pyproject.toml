@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+requires-python = ">=3.11"
+authors = [{ name = "Christoph Heindl"}]
+name = "rpc-vispy"
+dynamic = ["dependencies", "optional-dependencies", "version"]
+
+[project.urls]
+Homepage = "https://github.com/cheind/rpc-vispy"
+
+[tool.setuptools.packages.find]
+where = ["."] 
+include = ["rpcvispy*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "rpcvispy.version.__VERSION__"}
+dependencies = { file = ["requirements.in"] }
+optional-dependencies.dev = { file = ["dev-requirements.in"] }
