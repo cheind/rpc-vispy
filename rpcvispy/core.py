@@ -109,7 +109,7 @@ def find_node(root: scene.Node, name: str):
         n = stack.popleft()
         if n.name is not None and n.name == name:
             return n
-        for child in enumerate(n.children):
+        for child in n.children:
             stack.append(child)
 
     return None
