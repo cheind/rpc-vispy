@@ -46,7 +46,7 @@ def xyz_axis(
     ti: core.TimeInfo = None,
     v: core.RPCCanvas = None,
 ):
-    """Plot or update a set n-dimensional points"""
+    """Set XYZ indication"""
 
     def _axis(ctx: core.Context):
         # called in remote context
@@ -73,7 +73,7 @@ def transform(
     ti: core.TimeInfo = None,
     v: core.RPCCanvas = None,
 ):
-    """Plot or update a set n-dimensional points"""
+    """Set the node transform"""
 
     t_parent_child = t_parent_child if t_parent_child is not None else np.eye(4)
 
@@ -87,3 +87,33 @@ def transform(
 
     v = v or core.current_canvas()
     v.schedule(_transform, ti)
+
+
+def empty(
+    key: str = None,
+    parent_key: str = None,
+    t_parent_child: np.ndarray = None,
+    ti: core.TimeInfo = None,
+    v: core.RPCCanvas = None,
+):
+    """Add an empty placeholder node"""
+
+    t_parent_child = t_parent_child if t_parent_child is not None else np.eye(4)
+
+    def _empty(ctx: core.Context):
+        from vispy.scene import Node
+        from vispy.scene import MatrixTransform
+
+        empty = ctx.ensure_get(
+            key,
+            lambda: Node(
+                parent=core.find_node(ctx.view.scene, parent_key),
+                name=key,
+            ),
+        )
+        empty.transform = MatrixTransform()
+        empty.transform.matrix = t_parent_child.T
+        empty.update()
+
+    v = v or core.current_canvas()
+    v.schedule(_empty, ti)
