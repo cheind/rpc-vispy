@@ -129,19 +129,22 @@ def _worker(inq: Queue, **worker_kwargs):
         rpc = loads(bytes)
         rpc(ctx)
 
-    def pop_queue(now: float):
+    def pop_queue_many(now: float, maxn: int = 100):
         """Pops from queue and skips timeout elements"""
-        n = 100
+        n = maxn
+        outdated = 0
         try:
             while n > 0:
                 t, code_bytes = inq.get_nowait()
-                n = -1 if (now - t.created) <= t.max_queue_time else n - 1
-            if n >= 0 and n < 100:
-                ctx.rv.logger.info(f"Outdated more {100-n} elements")
-            return t, code_bytes
+                if (now - t.created) <= t.max_queue_time:
+                    yield t, code_bytes
+                else:
+                    outdated += 1
         except Empty:
             pass
-        return None
+        finally:
+            if outdated > 0:
+                ctx.rv.logger.debug(f"Outdated {outdated} elements")
 
     def update(ev):
         """Update loop called by timer"""
@@ -149,12 +152,10 @@ def _worker(inq: Queue, **worker_kwargs):
         ctx.rv.now = time.perf_counter()
 
         # read from queue
-        read_tuple = pop_queue(ctx.rv.now)
-
-        if read_tuple is not None:
-            t, code_bytes = read_tuple
-            if t.pts <= ctx.rv.now:
-                # Drawing should already have happened
+        for t, code_bytes in pop_queue_many(now=ctx.rv.now, maxn=100):
+            if t.pts <= (ctx.rv.now + ev.dt):
+                # Drawing should already have happened or happen with
+                # a single fps
                 process_closure(code_bytes)
             else:
                 # Draw later (note: separate queue)
