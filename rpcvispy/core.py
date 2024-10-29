@@ -9,6 +9,7 @@ from functools import partial
 from queue import Empty, Full, Queue
 from types import SimpleNamespace
 from typing import Callable
+from functools import lru_cache
 
 from dill import dumps, loads
 from vispy import app, scene
@@ -31,6 +32,11 @@ _all_vis: list["RPCCanvas"] = []
 _the_vis: "RPCCanvas" = None
 
 _logger = logging.getLogger("rpcvispy")
+
+
+@lru_cache(10)
+def warn_once(logger: logging.Logger, msg: str):
+    logger.warning(msg)
 
 
 class Context(SimpleNamespace):
@@ -85,9 +91,9 @@ def schedule_fn(queue: Queue, fn: ContextFn, ti: TimeInfo = None):
     """Schedule a draw function on the remote"""
     ti = ti or TimeInfo()
     try:
-        queue.put((ti, dumps(fn)), timeout=ti.max_queue_time)
+        queue.put_nowait((ti, dumps(fn)))
     except Full:
-        _logger.warning("Queue full")
+        warn_once(_logger, "Queue full, dropping draw elements")
 
 
 def _default_setup(ctx: Context, **kwargs):
